@@ -82,7 +82,7 @@
                     <div class="row">
 
                         <div class="col-lg-6">
-                            <a href="<?= base_url('data/maphome') ?>" class="card1-link" target="_blank">
+                            <a href="<?= base_url('map') ?>" class="card1-link" target="_blank">
                                 <div class="card1" href="#">
                                     <img src="img/Asset_map.svg">
                                     <div class="overlay"></div>
@@ -90,10 +90,14 @@
                                 </div>
                             </a>
                         </div>
+
                         <div class="col-lg-6">
                             <div class="p-5">
                                 <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Selamat Datang</h1>
+
+                                    <img src="img/logojateng.png" style="width: 130px; height: 80px;">
+
+                                    <h2 class="h4 text-gray-900 mb-3">Login SiRanah</h2>
                                 </div>
                                 <?= view('Myth\Auth\Views\_message_block') ?>
                                 <form action="<?= url_to('login') ?>" method="post" class="user">
@@ -110,7 +114,7 @@
                                         </div>
                                     <?php else: ?>
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user <?php if (session('errors.login')) : ?>is-invalid<?php endif ?>"
+                                            <input type="text" class="form-control form-control-user <?php if (session('errors.login')) : ?>is-invalid<?php endif ?>"
                                                 name="login" placeholder="<?= lang('Auth.emailOrUsername') ?>">
                                             <div class="invalid-feedback">
                                                 <?= session('errors.login') ?>
@@ -127,18 +131,16 @@
                                     </div>
 
 
-                                    <button type="submit" class="btn btn-primary btn-user btn-block">
+                                    <button type="submit" class="btn btn-siranah btn-user btn-block">
                                         <?= lang('Auth.loginAction') ?>
                                     </button>
 
                                 </form>
                                 <hr>
-                                <!-- <div class="text-center">
-                                    <a class="small" >Home</a>
-                                </div> -->
-                                <!-- <div class="text-center">
-                                    <a class="small" href="#">Create an Account!</a>
-                                </div> -->
+                                <div class="text-center" style="font-size: 10pt;">
+                                    <a>Sistem Informasi Rawan Kebakaran</a><br>
+                                    <a>Satpol PP Jawa Tengah</a>
+                                </div>
                             </div>
                         </div>
                     </div>

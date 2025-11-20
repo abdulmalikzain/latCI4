@@ -26,8 +26,28 @@
         <div class="form-row">
             <div class="form-group col-md-4">
                 <label for="kabKota">Kota / Kabupaten <sup>*tidak boleh kosong</sup></label>
-                <input type="text" class="form-control <?= ($validation->hasError('kabKota')) ? 'is-invalid' : ''; ?>" id="kabKota" name="kabKota" value="<?= old('kabKota'); ?>" />
+
+                <select class="form-control <?= ($validation->hasError('kabKota')) ? 'is-invalid' : ''; ?>"
+                    id="kabKota"
+                    name="kabKota">
+
+                    <option value="">-- Pilih Kota / Kabupaten --</option>
+
+                    <?php foreach ($wilayahList as $w): ?>
+                        <option value="<?= $w ?>" <?= old('kabKota') == $w ? 'selected' : '' ?>>
+                            <?= $w ?>
+                        </option>
+                    <?php endforeach; ?>
+
+                </select>
+
+                <?php if ($validation->hasError('kabKota')) : ?>
+                    <div class="invalid-feedback">
+                        <?= $validation->getError('kabKota'); ?>
+                    </div>
+                <?php endif; ?>
             </div>
+
             <div class="invalid-feedback">
                 <?= $validation->getError('kabKota'); ?>
             </div>

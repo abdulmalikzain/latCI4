@@ -18,24 +18,24 @@ class User extends BaseController
         $this->dataWilayahModel = new DataWilayahModel();;
     }
 
-    public function index(): string
+    public function index()
     {
-        $dataKec = new DataWilayahModel();
-        // Ambil data jumlah berdasarkan 
-        $dataKecamatan = $dataKec->getJumlahByKecamatan();
 
-        // $config = new AuthConfig();
+        $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
 
-        return view('user/index', ['data' => $dataKecamatan]);
+        $data['jumlahKotaKecamatan'] = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
+        $data['tanggal'] = $tanggal; // ← kirim ke view
+
+        return view('user/index', $data);
     }
 
-    // public function index(): string
-    // {
-    //     // $dataKec = new DataWilayahModel();
-    //     // // Ambil data jumlah berdasarkan 
-    //     // $dataKecamatan = $dataKec->getJumlahByKecamatan();
+    public function getData()
+    {
+        $tanggal = $this->request->getGet('tanggal');
 
+        $data1 = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
 
-    //     return view('user/index');
-    // }
+        // return JSON (jangan view)
+        return $this->response->setJSON($data1);
+    }
 }

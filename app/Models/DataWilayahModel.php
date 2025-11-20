@@ -38,22 +38,71 @@ class DataWilayahModel extends Model
         return $this->where(['id' => $id])->first();
     }
 
-    public function getJumlahByKecamatan()
+    public function getJumlahByKabupatenKecamatan($tanggal = null)
     {
-        $results = $this->select('kecamatan, COUNT(*) as jumlah')
-            ->groupBy('Kecamatan')
-            ->findAll();
+        $builder = $this->select('kabKota, kecamatan, COUNT(*) as jumlah');
+
+        // Jika tanggal dipilih, tambahkan filter
+        if ($tanggal) {
+            $builder->where('tglKejadian', $tanggal);
+        }
+
+        $builder->groupBy(['kabKota', 'kecamatan']);
+        $results = $builder->findAll();
+
+        if (empty($results)) {
+            return [
+                'status' => 'kosong',
+                'message' => 'Data kosong'
+            ];
+        }
 
         $output = [];
         foreach ($results as $row) {
-            $output[$row['kecamatan']] = (int) $row['jumlah'];
+            $kabKota = $row['kabKota'];
+            $kecamatan = $row['kecamatan'];
+            $jumlah = (int) $row['jumlah'];
+
+            if (!isset($output[$kabKota])) {
+                $output[$kabKota] = [];
+            }
+
+            $output[$kabKota][$kecamatan] = $jumlah;
         }
+
 
         return $output;
     }
 
-    // public function insertData($data)
-    // {
-    //     $this->db->table('wilayah')->insert($data);
-    // }
+    public function getFilteredData($kabKota = null, $startDate = null, $endDate = null, $isAdmin = false, $wilayahUser = null)
+    {
+        $builder = $this->builder();
+
+        // ======== FILTER KAB/KOTA =========
+        if ($isAdmin) {
+            // Admin bebas pilih apa saja
+            if (!empty($kabKota)) {
+                $builder->where('kabKota', $kabKota);
+            }
+        } else {
+            // User biasa hanya wilayah sendiri
+            $builder->where('kabKota', $wilayahUser);
+        }
+
+        // ======== FILTER TANGGAL =========
+        if (!empty($startDate) && !empty($endDate)) {
+            $builder->where('tglKejadian >=', $startDate);
+            $builder->where('tglKejadian <=', $endDate);
+        } elseif (!empty($startDate)) {
+            $builder->where('tglKejadian', $startDate);
+        }
+
+        return $builder;
+    }
+
+
+    public function getKabKotaList()
+    {
+        return $this->select('kabKota')->distinct()->findAll();
+    }
 }
