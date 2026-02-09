@@ -59,6 +59,8 @@ class Kebakaran extends BaseController
             "Pekalongan",
             "Pemalang",
             "Purbalingga",
+            "Purworejo",
+            "Rembang",
             "Semarang",
             "Sragen",
             "Sukoharjo",
@@ -66,12 +68,12 @@ class Kebakaran extends BaseController
             "Temanggung",
             "Wonogiri",
             "Wonosobo",
-            "Kota Magelang",
-            "Kota Pekalongan",
-            "Kota Salatiga",
-            "Kota Semarang",
-            "Kota Surakarta",
-            "Kota Tegal"
+            "KotaMagelang",
+            "KotaPekalongan",
+            "KotaSalatiga",
+            "KotaSemarang",
+            "KotaSurakarta",
+            "KotaTegal"
         ];
 
         // Jika admin → bisa pilih semua wilayah
@@ -94,61 +96,81 @@ class Kebakaran extends BaseController
     public function insertData()
     {
         session();
-        // validasi kolom
+        // VALIDASI WAJIB
         if (! $this->validate([
-            'tglKejadian' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'tanggal Kejadian harus diisi'
-                ]
-            ],
-            'waktuKejadian' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'waktu Kejadian harus diisi'
-                ]
-            ],
-            'kabKota' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Kabupaten/Kota harus diisi'
-                ]
-            ],
-            'kecamatan' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'kecamatan harus diisi'
-                ]
-            ],
-        ])) {
-            $validation = \Config\Services::validation();
-            $data['validation'] = $validation;
-            // return view('dataKebakaran/inputData', $data);
-            return redirect()->back()->withInput()->with('validation', $validation);
+            'tglKejadian' => 'required|valid_date',
+            'waktuKejadian' => 'required',
+            'kabKota' => 'required',
+            'kecamatan' => 'required',
+            'jenisObjek' => 'required',
+            'penyebab' => 'required',
+            'jmlBangunan' => 'required|numeric',
+            'korbanMeninggal' => 'required|numeric',
+            'korbanLuka' => 'required|numeric',
+            'waktuRespon' => 'required',
+            'jmlArmada' => 'required|numeric',
+            'jmlPersonil' => 'required|numeric',
 
-            // return redirect()->to('/inputData')->withInput()->with('validation', $validation);
+        ])) {
+            return redirect()->back()
+                ->withInput()
+                ->with('validation', $this->validator);
         }
 
-        ///simpan
-        $this->dataWilayahModel->save([
-            'tglKejadian' => $this->request->getVar('tglKejadian'),
-            'waktuKejadian' => $this->request->getVar('waktuKejadian'),
-            'kabKota' => $this->request->getVar('kabKota'),
-            'kecamatan' => $this->request->getVar('kecamatan'),
-            'jenisObjek' => $this->request->getVar('jenisObjek'),
-            'penyebab' => $this->request->getVar('penyebab'),
-            'jmlBangunan' => $this->request->getVar('jmlBangunan'),
-            'korbanMeninggal' => $this->request->getVar('korbanMeninggal'),
-            'korbanLuka' => $this->request->getVar('korbanLuka'),
-            'kerugian' => $this->request->getVar('kerugian'),
-            'waktuRespon' => $this->request->getVar('waktuRespon'),
-            'jmlArmada' => $this->request->getVar('jmlArmada'),
-            'jmlPersonil' => $this->request->getVar('jmlPersonil'),
-            'sumberInfo' => $this->request->getVar('sumberInfo')
+        // AMBIL DATA
+        $tglKejadian  = $this->request->getPost('tglKejadian');
+        $waktuKejadian = $this->request->getPost('waktuKejadian');
+        $kabKota      = $this->request->getPost('kabKota');
+        $kecamatan    = $this->request->getPost('kecamatan');
+
+        // 🔥 CEK DUPLIKAT
+        if ($this->dataWilayahModel->cekDuplikat($tglKejadian, $waktuKejadian, $kabKota, $kecamatan)) {
+
+            return redirect()->back()
+                ->withInput()
+                ->with('warning', 'Data kejadian dengan tanggal, waktu, dan lokasi yang sama sudah ada!');
+        }
+
+        //  🔥 CLEAN KERUGIAN (Rp, titik, dll)
+        $kerugian = $this->request->getPost('kerugian');
+        $kerugianClean = preg_replace('/[^0-9]/', '', $kerugian);
+
+        //fiel tidak ada pengecekan duplicate
+        $jenisObjek      = $this->request->getPost('jenisObjek');
+        $penyebab        = $this->request->getPost('penyebab');
+        $jmlBangunan     = $this->request->getPost('jmlBangunan');
+        $korbanMeninggal = $this->request->getPost('korbanMeninggal');
+        $korbanLuka      = $this->request->getPost('korbanLuka');
+        $waktuRespon     = $this->request->getPost('waktuRespon');
+        $jmlArmada       = $this->request->getPost('jmlArmada');
+        $jmlPersonil     = $this->request->getPost('jmlPersonil');
+        $sumberInfo      = $this->request->getPost('sumberInfo');
+
+        // INSERT DATA (lanjut normal)
+        $this->dataWilayahModel->insert([
+            'user_id'        => user()->id,
+            'tglKejadian'    => $tglKejadian,
+            'waktuKejadian'  => $waktuKejadian,
+            'kabKota'        => $kabKota,
+            'kecamatan'      => $kecamatan,
+            'jenisObjek'     => $jenisObjek,
+            'penyebab'       => $penyebab,
+            'jmlBangunan'    => $jmlBangunan,
+            'korbanMeninggal' => $korbanMeninggal,
+            'korbanLuka'     => $korbanLuka,
+            'kerugian'       => $kerugianClean,
+            'waktuRespon'    => $waktuRespon,
+            'jmlArmada'      => $jmlArmada,
+            'jmlPersonil'    => $jmlPersonil,
+            'sumberInfo'     => $sumberInfo,
+
+            // field lain tetap
         ]);
 
         session()->setFlashdata('pesan', 'Data berhasil ditambahkan.');
-        return redirect()->to('data/tampilData');
+
+        return redirect()->to('data/tampilData')
+            ->with('pesan', 'Data berhasil disimpan');
     }
 
     public function tampilData()
@@ -210,7 +232,13 @@ class Kebakaran extends BaseController
         $offset = ($page - 1) * $perPage;
 
         $total = $builder->countAllResults(false);
-        $data['datakebakaran'] = $builder->limit($perPage, $offset)->get()->getResultArray();
+        // $data['datakebakaran'] = $builder->limit($perPage, $offset)->get()->getResultArray();
+        $builder->orderBy('tglKejadian', 'DESC'); // ⬅️ TAMBAHKAN INI
+
+        $data['datakebakaran'] = $builder
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
 
         $pager = \Config\Services::pager();
         $data['pager'] = $pager->makeLinks($page, $perPage, $total, 'default_full');
@@ -231,8 +259,6 @@ class Kebakaran extends BaseController
         return view('dataKebakaran/tampilData', $data);
     }
 
-
-
     public function detail($id)
     {
         $data = [
@@ -246,13 +272,13 @@ class Kebakaran extends BaseController
     public function delete($id)
     {
         $this->dataWilayahModel->delete($id);
-        session()->setFlashdata('pesan', 'Data berhasil dihapus.');
-        return redirect()->to('data/tampilData');
+        session()->setFlashdata('success', 'Data berhasil dihapus.');
+        return redirect()->to('data/tampilData')->with('pesan', 'Data berhasil dihapus.');
     }
 
     public function editData($id)
     {
-        // session();
+
         $data = [
             'validation' => \Config\Services::validation(),
             'wilayah' => $this->dataWilayahModel->getWilayah($id)
@@ -263,61 +289,61 @@ class Kebakaran extends BaseController
 
     public function updateData($id)
     {
-        // validasi kolom
+        session();
+        // VALIDASI WAJIB
         if (! $this->validate([
-            'tglKejadian' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'tanggal Kejadian harus diisi'
-                ]
-            ],
-            'waktuKejadian' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'waktu Kejadian harus diisi'
-                ]
-            ],
-            'kabKota' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'Kabupaten/Kota harus diisi'
-                ]
-            ],
-            'kecamatan' => [
-                'rules' => 'required',
-                'errors' => [
-                    'required' => 'kecamatan harus diisi'
-                ]
-            ],
+            'jenisObjek' => 'required',
+            'penyebab' => 'required',
+            'jmlBangunan' => 'required|numeric',
+            'korbanMeninggal' => 'required|numeric',
+            'korbanLuka' => 'required|numeric',
+            'waktuRespon' => 'required',
+            'jmlArmada' => 'required|numeric',
+            'jmlPersonil' => 'required|numeric',
+            'sumberInfo' => 'required',
+            'kerugian' => 'required',
+
         ])) {
-            $validation = \Config\Services::validation();
-            $data['validation'] = $validation;
-            // return view('editData/' . $this->request->getVar('id'), $data);
-            // return redirect()->to('editData/' . $this->request->getVar('id'))->withInput()->with('validation', $validation);
-            return redirect()->back()->withInput()->with('validation', $validation);
+            return redirect()->back()
+                ->withInput()
+                ->with('validation', $this->validator);
         }
 
+        // AMBIL DATA
+
+
+        //  🔥 CLEAN KERUGIAN (Rp, titik, dll)
+        $kerugian = $this->request->getPost('kerugian');
+        $kerugianClean = preg_replace('/[^0-9]/', '', $kerugian);
+
+        //fiel tidak ada pengecekan duplicate
+        $jenisObjek      = $this->request->getPost('jenisObjek');
+        $penyebab        = $this->request->getPost('penyebab');
+        $jmlBangunan     = $this->request->getPost('jmlBangunan');
+        $korbanMeninggal = $this->request->getPost('korbanMeninggal');
+        $korbanLuka      = $this->request->getPost('korbanLuka');
+        $waktuRespon     = $this->request->getPost('waktuRespon');
+        $jmlArmada       = $this->request->getPost('jmlArmada');
+        $jmlPersonil     = $this->request->getPost('jmlPersonil');
+        $sumberInfo      = $this->request->getPost('sumberInfo');
+
+        // INSERT DATA (lanjut normal)
         $this->dataWilayahModel->save([
-            'id' => $id,
-            'tglKejadian' => $this->request->getVar('tglKejadian'),
-            'waktuKejadian' => $this->request->getVar('waktuKejadian'),
-            'kabKota' => $this->request->getVar('kabKota'),
-            'kecamatan' => $this->request->getVar('kecamatan'),
-            'jenisObjek' => $this->request->getVar('jenisObjek'),
-            'penyebab' => $this->request->getVar('penyebab'),
-            'jmlBangunan' => $this->request->getVar('jmlBangunan'),
-            'korbanMeninggal' => $this->request->getVar('korbanMeninggal'),
-            'korbanLuka' => $this->request->getVar('korbanLuka'),
-            'kerugian' => $this->request->getVar('kerugian'),
-            'waktuRespon' => $this->request->getVar('waktuRespon'),
-            'jmlArmada' => $this->request->getVar('jmlArmada'),
-            'jmlPersonil' => $this->request->getVar('jmlPersonil'),
-            'sumberInfo' => $this->request->getVar('sumberInfo')
+            'id'             => $id,
+            'jenisObjek'     => $jenisObjek,
+            'penyebab'       => $penyebab,
+            'jmlBangunan'    => $jmlBangunan,
+            'korbanMeninggal' => $korbanMeninggal,
+            'korbanLuka'     => $korbanLuka,
+            'kerugian'       => $kerugianClean,
+            'waktuRespon'    => $waktuRespon,
+            'jmlArmada'      => $jmlArmada,
+            'jmlPersonil'    => $jmlPersonil,
+            'sumberInfo'     => $sumberInfo,
 
         ]);
 
         session()->setFlashdata('pesan', 'Data berhasil diubah.');
-        return redirect()->to('data/tampilData');
-        // dd($this->request->getVar());
+        return redirect()->to('data/tampilData')->with('pesan', 'Data berhasil diubah.');
     }
 }

@@ -2,14 +2,14 @@
 
 <?= $this->section('page-content'); ?>
 
-<div class="container-fluid">
+<div class="container-fluid mt-3 mb-3">
     <h4>Informasi Laporan Kebakaran</h4>
-    <div class="card border-dark mb-3">
+    <div class="card border-dark mb-3 mt-3">
         <div class="card-header" style="color: black;">Informasi Wilayah Terkena Kebakaran</div>
 
         <div class="card-body">
             <div class="row">
-                <div class="col-6">
+                <div class="col-5">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">Tanggal Kejadian</li>
                         <li class="list-group-item">Waktu Kejadian</li>
@@ -26,7 +26,7 @@
                         <li class="list-group-item">Sumber Informasi</li>
                     </ul>
                 </div>
-                <div class="col-6">
+                <div class="col-7">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><?= $wilayah['tglKejadian'] ?></li>
                         <li class="list-group-item"><?= $wilayah['waktuKejadian'] ?></li>
@@ -35,9 +35,9 @@
                         <li class="list-group-item"><?= $wilayah['jenisObjek'] ?></li>
                         <li class="list-group-item"><?= $wilayah['jmlBangunan'] ?></li>
                         <li class="list-group-item"><?= $wilayah['korbanMeninggal'] ?></li>
-                        <li class="list-group-item"><?= $wilayah['korbanMeninggal'] ?></li>
-                        <li class="list-group-item"><?= $wilayah['waktuRespon'] ?></li>
                         <li class="list-group-item"><?= $wilayah['korbanLuka'] ?></li>
+                        <li class="list-group-item"><?= $wilayah['kerugian'] ?></li>
+                        <li class="list-group-item"><?= $wilayah['waktuRespon'] ?></li>
                         <li class="list-group-item"><?= $wilayah['jmlPersonil'] ?></li>
                         <li class="list-group-item"><?= $wilayah['jmlArmada'] ?></li>
                         <li class="list-group-item"><?= $wilayah['sumberInfo'] ?></li>
@@ -48,12 +48,44 @@
     </div>
 
     <a href="editData/<?= $wilayah['id'] ?>" class="btn btn-primary">Edit Data</a>
-    <form action="<?= $wilayah['id'] ?>" method="post" class="d-inline">
+
+
+    <form action="<?= site_url('data/' . $wilayah['id']); ?>"
+        method="post"
+        class="d-inline form-delete">
         <?= csrf_field(); ?>
         <input type="hidden" name="_method" value="DELETE">
-        <button type="submit" class="btn btn-danger" onclick="return confirm('apakah anda yakin');">Hapus</button>
+        <button type="submit" class="btn btn-danger">
+            Hapus
+        </button>
     </form>
 
+
 </div>
+
+<script>
+    document.querySelectorAll('.form-delete').forEach((form) => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Yakin hapus data?',
+                text: "Data yang dihapus tidak bisa dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
+
+<?php alert(); ?>
 
 <?= $this->endSection(); ?>

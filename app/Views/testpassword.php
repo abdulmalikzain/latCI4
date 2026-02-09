@@ -1,9 +1,9 @@
 <?php
 // Ganti ini dengan password yang kamu ketik di form login
-$input = 'semarang123';
+$input = 'wonosobo12345';
 
 // // Ganti ini dengan hash yang ada di database kamu (kolom password_hash)
-$hash = '$2y$10$qumhpwRbG/HQJavSdNwVwONg5KRCQKuwE6wM3Xe1Hr5MoGM1LC1E.';
+$hash = '$2y$10$li4vbwOMeSPXgPoCpoEQneb23PpUL1q6vXs/TLT2pShPLOB7Xn8rK';
 
 // Fungsi ini akan membandingkan apakah password dan hash cocok
 if (password_verify($input, $hash)) {

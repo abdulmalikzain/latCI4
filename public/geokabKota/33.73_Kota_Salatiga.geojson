@@ -6,7 +6,7 @@
       "properties": {
         "kd_propinsi": "33",
         "kd_dati2": "73",
-        "nm_dati2": "Kota Salatiga"
+        "nm_dati2": "KotaSalatiga"
       },
       "geometry": {
         "type": "MultiPolygon",

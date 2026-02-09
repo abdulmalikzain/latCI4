@@ -1,71 +1,110 @@
 <?= $this->extend('templates/index'); ?>
 <?= $this->section('page-content'); ?>
 
-<div class="container-fluid">
-
-    <!DOCTYPE html>
-    <html lang="id">
-
-    <head>
-        <meta charset="UTF-8">
-        <title>Form Register</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-
-    <body class="bg-light">
-
-        <div class="container mt-5">
-            <div class="card shadow-sm p-4">
-                <h3 class="mb-3">Register User Baru</h3>
-
-                <?php if (session()->getFlashdata('success')): ?>
-                    <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
-                <?php elseif (session()->getFlashdata('errors')): ?>
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                <li><?= esc($error) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
-
-                <form action="<?= base_url('admin/simpanuser') ?>" method="post">
-                    <?= csrf_field() ?>
-
-                    <div class="mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" value="<?= old('email') ?>" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Username</label>
-                        <input type="text" name="username" value="<?= old('username') ?>" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Pilih Grup</label>
-                        <select name="group" class="form-select" required>
-                            <option value="">-- Pilih Grup --</option>
-                            <option value="admin" <?= old('group') == 'admin' ? 'selected' : '' ?>>Admin</option>
-                            <option value="user" <?= old('group') == 'user' ? 'selected' : '' ?>>User</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Daftar</button>
-                </form>
-            </div>
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0">Tambah User Baru</h4>
         </div>
 
-    </body>
+        <div class="card-body">
+            <?php if (session()->getFlashdata('errors')): ?>
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach ?>
+                    </ul>
+                </div>
+            <?php endif ?>
+            <?php if (session()->getFlashdata('pesan')) : ?>
+                <div class="alert alert-success" role="alert">
+                    <?= session()->getFlashdata('pesan'); ?>
+                </div>
+            <?php endif; ?>
 
-    </html>
+            <form action="simpanuser" method="post">
+                <?= csrf_field() ?>
 
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email"
+                        value="<?= old('email') ?>" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Username</label>
+                    <input type="text" class="form-control" name="username"
+                        value="<?= old('username') ?>" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Password</label>
+                    <input type="password" class="form-control" name="password"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Wilayah</label>
+                    <select class="form-select" name="wilayah" required>
+                        <option value="">-- Pilih Wilayah --</option>
+                        <option value="Banjarnegara">Banjarnegara</option>
+                        <option value="Banyumas">Banyumas</option>
+                        <option value="Batang">Batang</option>
+                        <option value="Blora">Blora</option>
+                        <option value="Boyolali">Boyolali</option>
+                        <option value="Brebes">Brebes</option>
+                        <option value="Cilacap">Cilacap</option>
+                        <option value="Demak">Demak</option>
+                        <option value="Grobogan">Grobogan</option>
+                        <option value="Jepara">Jepara</option>
+                        <option value="Karanganyar">Karanganyar</option>
+                        <option value="Kebumen">Kebumen</option>
+                        <option value="Kendal">Kendal</option>
+                        <option value="Klaten">Klaten</option>
+                        <option value="Kudus">Kudus</option>
+                        <option value="Magelang">Magelang</option>
+                        <option value="Pati">Pati</option>
+                        <option value="Pekalongan">Pekalongan</option>
+                        <option value="Pemalang">Pemalang</option>
+                        <option value="Purbalingga">Purbalingga</option>
+                        <option value="Purworejo">Purworejo</option>
+                        <option value="Rembang">Rembang</option>
+                        <option value="Semarang">Semarang</option>
+                        <option value="Sragen">Sragen</option>
+                        <option value="Sukoharjo">Sukoharjo</option>
+                        <option value="Tegal">Tegal</option>
+                        <option value="Temanggung">Temanggung</option>
+                        <option value="Wonogiri">Wonogiri</option>
+                        <option value="Wonosobo">Wonosobo</option>
+                        <option value="KotaMagelang">Kota Magelang</option>
+                        <option value="KotaPekalongan">Kota Pekalongan</option>
+                        <option value="KotaSalatiga">Kota Salatiga</option>
+                        <option value="KotaSemarang">Kota Semarang</option>
+                        <option value="KotaSurakarta">Kota Surakarta</option>
+                        <option value="KotaTegal">Kota Tegal</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label>Role User</label>
+                    <select class="form-select" name="role" required>
+                        <option value="">-- Pilih Role --</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fa fa-user-plus"></i> Simpan User
+                </button>
+                <!-- <a href="" class="btn btn-secondary">
+                    Kembali
+                </a> -->
+            </form>
+
+        </div>
+    </div>
 </div>
 
 <?= $this->endSection(); ?>

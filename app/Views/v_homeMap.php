@@ -63,32 +63,150 @@
 
         const map = L.map('map', {
             center: [-7.28, 110.34],
-            zoom: 9,
-            layers: [peta3]
+            zoom: 9
         });
+
+        // ---- TILE THEMES ----
+        const lightMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png');
+
+        // ---- AMBIL STATUS THEME DARI LOCAL STORAGE ----
+        let savedTheme = localStorage.getItem("mapTheme");
+        let isDark = savedTheme === "dark";
+
+        // ---- SET TEMA SAAT PAGE LOAD ----
+        if (isDark) {
+            darkMap.addTo(map);
+            document.body.classList.add("dark-mode");
+        } else {
+            lightMap.addTo(map);
+        }
+
+
+        // ---- CUSTOM TOGGLE BUTTON ----
+        const ThemeControl = L.Control.extend({
+            options: {
+                position: 'bottomleft'
+            },
+
+            onAdd: function(map) {
+                const div = L.DomUtil.create('div', 'theme-toggle');
+
+                div.innerHTML = `
+            <button id="toggleTheme" class="toggle-btn">
+                ${isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+            </button>
+        `;
+
+                L.DomEvent.disableClickPropagation(div);
+                return div;
+            }
+        });
+        map.addControl(new ThemeControl());
+
+
+        // ---- EVENT KETIKA BUTTON DI KLIK ----
+        document.addEventListener('click', function(e) {
+            if (e.target.id === "toggleTheme") {
+                isDark = !isDark;
+
+                if (isDark) {
+                    map.removeLayer(lightMap);
+                    darkMap.addTo(map);
+                    document.body.classList.add("dark-mode");
+                    e.target.innerHTML = "☀️ Light Mode";
+
+                    // Simpan ke LocalStorage
+                    localStorage.setItem("mapTheme", "dark");
+
+                } else {
+                    map.removeLayer(darkMap);
+                    lightMap.addTo(map);
+                    document.body.classList.remove("dark-mode");
+                    e.target.innerHTML = "🌙 Dark Mode";
+
+                    // Simpan ke LocalStorage
+                    localStorage.setItem("mapTheme", "light");
+                }
+            }
+        });
+
+
 
         ///////////filter tanggal
         const DateControl = L.Control.extend({
             options: {
-                position: 'topright' // posisi bawaan Leaflet
+                position: 'topright'
             },
 
             onAdd: function(map) {
                 const div = L.DomUtil.create('div', 'date-filter-card');
                 div.innerHTML = `
-                    <label>Pilih Tanggal:</label>
-                    <input type="date" id="tanggal" name="tanggal" value="<?= date('Y-m-d') ?>">
-                    `;
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <label>Dari:</label>
+                <input type="date" id="startDate">
 
-                // Pastikan event click/touch tidak mengganggu interaksi peta
+                <label>Sampai:</label>
+                <input type="date" id="endDate">
+
+                <button id="applyDate" style="margin-top:8px;" class="btn btn-primary">Terapkan</button>
+            </div>
+        `;
+                // Cegah peta ikut nge-zoom saat klik
                 L.DomEvent.disableClickPropagation(div);
+
+                setTimeout(() => {
+                    const startInput = document.getElementById("startDate");
+                    const endInput = document.getElementById("endDate");
+
+                    // Set batas maksimum = hari ini
+                    let today = new Date().toISOString().split("T")[0];
+                    startInput.max = today;
+                    endInput.max = today;
+
+
+                    document.getElementById('applyDate').addEventListener('click', function() {
+                        document.getElementById('loading-spinner').style.display = 'block';
+
+                        const start = startInput.value;
+                        const end = endInput.value;
+
+                        console.log("Tanggal dikirim:", start, end);
+
+                        if (!start || !end) {
+                            alert("Pilih kedua tanggal!");
+                            document.getElementById('loading-spinner').style.display = 'none';
+                            return;
+
+                        }
+
+                        fetch(`/getData?startDate=${start}&endDate=${end}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                console.log("Response server:", data);
+                                updateMap(data);
+                                setTimeout(() => {
+                                    document.getElementById('loading-spinner').style.display = 'none';
+                                }, 1500);
+                            })
+                            .catch(err => console.error("Fetch error:", err));
+                    });
+                }, 500);
 
                 return div;
             }
         });
 
+
         // Tambahkan ke map
         map.addControl(new DateControl());
+
+        // 🔥 Set default input date dari server
+        window.onload = function() {
+            document.getElementById('startDate').value = "<?= $startDate ?>";
+            document.getElementById('endDate').value = "<?= $endDate ?>";
+        };
+
 
         // control that shows state info on hover
         const info = L.control({
@@ -140,7 +258,7 @@
             '33.03_Purbalingga.geojson',
             '33.04_Banjarnegara.geojson',
             '33.05_Kebumen.geojson',
-            '33.06_.geojson',
+            '33.06_Purworejo.geojson',
             '33.07_Wonosobo.geojson',
             '33.08_Magelang.geojson',
             '33.09_Boyolali.geojson',
@@ -174,7 +292,7 @@
 
         // Simpan semua layer GeoJSON di sini
         let geojsonLayers = []; // 🟢 ganti nama agar tidak bentrok
-        let tanggalDipilih = document.getElementById('tanggal').value;
+
 
         // Fungsi warna berdasarkan data
         function getColor(d) {
@@ -187,14 +305,22 @@
                 d > 10 ? '#FED976' : '#fff7d3ff';
         }
 
+        function getTotalKota(kota) {
+            if (!jumlahKotaKecamatan[kota]) return 0;
+
+            return Object.values(jumlahKotaKecamatan[kota]).reduce((a, b) => a + b, 0);
+        }
+
         function style(feature) {
+            const kota = feature.properties.nm_dati2;
+            const total = getTotalKota(kota);
+
             return {
                 weight: 3,
                 opacity: 1,
                 color: '#666',
-                // dashArray: '3',
                 fillOpacity: 0.7,
-                fillColor: getColor(jumlahKotaKecamatan[feature.properties.nm_dati2])
+                fillColor: getColor(total)
             };
         }
 
@@ -230,7 +356,7 @@
             function getPopupContent() {
                 let popupContent = `<h4>${kota}</h4>`;
                 popupContent += `<small>Data Laporan Kebakaran</small><br>`;
-                popupContent += `<small><i>Tanggal: ${tanggalDipilih}</i></small><br>`;
+                // popupContent += `<small><i>Tanggal: ${tanggalAwal}, ${tanggalAkhir}</i></small><br>`;
 
                 if (jumlahKotaKecamatan[kota]) {
                     const dataKecamatan = jumlahKotaKecamatan[kota];
@@ -261,6 +387,8 @@
 
         // 🔹 Tambahkan semua file GeoJSON ke peta
         async function getGeojson() {
+            document.getElementById('loading-spinner').style.display = 'block'; // Tampilkan spinner
+
             for (const file of geojsonFiles) {
                 try {
                     const res = await fetch(`geokabKota/${file}`);
@@ -272,33 +400,31 @@
                     }).addTo(map);
 
                     geojsonLayers.push(layer); // 🟢 simpan ke array
+
                 } catch (error) {
                     console.error("Gagal load GeoJSON:", error);
                 }
             }
+            document.getElementById('loading-spinner').style.display = 'none'; // Sembunyikan spinner setelah selesai
         }
 
         getGeojson();
 
-        document.getElementById('tanggal').addEventListener('change', function() {
-            const tanggal = this.value;
-            tanggalDipilih = tanggal;
-            spinner.style.display = 'block';
+        function updateMap(data) {
+            jumlahKotaKecamatan = data;
 
-            fetch(`/getDataKebakaran?tanggal=${tanggal}`)
-                .then(res => res.json())
-                .then(data => {
-                    jumlahKotaKecamatan = data;
-                    console.log("Data baru:", data);
+            // Reset style & popup tiap layer
+            geojsonLayers.forEach(layer => {
+                layer.eachLayer(featureLayer => {
+                    featureLayer.setStyle(style(featureLayer.feature)); // 🔥 ini refresh warna per polygon
 
-                    info.update();
+                    // featureLayer.unbindPopup(); // Hapus popup lama
+                });
+            });
 
-                    // 🟢 Update semua layer GeoJSON dengan style baru
-                    geojsonLayers.forEach(layer => layer.setStyle(style));
-                })
-                .catch(err => console.error("Fetch error:", err))
-                .finally(() => spinner.style.display = 'none');
-        });
+            info.update(); // update tooltip info
+
+        }
 
         const legend = L.control({
             position: 'bottomright'
@@ -306,19 +432,22 @@
 
         legend.onAdd = function(map) {
 
-            const div = L.DomUtil.create('div', 'info legend');
+            const div = L.DomUtil.create('div', 'custom-legend');
             const grades = [0, 10, 50, 100, 500];
-            const labels = [];
-            let from, to;
 
-            for (let i = 0; i < grades.length; i++) {
-                from = grades[i];
-                to = grades[i + 1];
+            div.innerHTML = `<h4>🔥Range Data</h4>`;
 
-                labels.push(`<i style="background:${getColor(from + 1)}"></i> ${from}${to ? `&ndash;${to}` : '+'}`);
-            }
+            grades.forEach((value, index) => {
+                const next = grades[index + 1];
 
-            div.innerHTML = '<strong>Range Data</strong><br>' + labels.join('<br>');
+                div.innerHTML += `
+            <div class="legend-row">
+                <span class="legend-color" style="background:${getColor(value + 1)}"></span>
+                <span class="legend-label">${value} ${next ? `– ${next}` : `+`}</span>
+            </div>
+        `;
+            });
+
             return div;
         };
 

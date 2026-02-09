@@ -31,7 +31,7 @@
                 <div class="bg-white py-2 collapse-inner rounded">
                     <h6 class="collapse-header">user:</h6>
                     <a class="collapse-item" href="<?= base_url('admin/listuser') ?>">daftar user</a>
-                    <!-- <a class="collapse-item" href="#">Forgot Password</a> -->
+                    <a class="collapse-item" href="<?= base_url('admin/tambahuser') ?>">tambah user</a>
 
                 </div>
             </div>
@@ -51,7 +51,7 @@
     <li class="nav-item">
         <a class="nav-link" href="<?= base_url('inputData') ?>">
             <i class="fas fa-fw fa-pen"></i>
-            <span>Tambah Data</span></a>
+            <span>Tambah Laporan</span></a>
     </li>
 
 

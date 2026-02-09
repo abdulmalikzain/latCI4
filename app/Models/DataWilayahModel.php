@@ -11,6 +11,7 @@ class DataWilayahModel extends Model
     // protected $returnType = 'object';
     protected $allowedFields = [
         'id',
+        'user_id',
         'tglKejadian',
         'waktuKejadian',
         'kabKota',
@@ -30,6 +31,8 @@ class DataWilayahModel extends Model
         'keterangan'
     ];
 
+    protected $useTimestamps = true;
+
     public function getWilayah($id = false)
     {
         if ($id == false) {
@@ -38,7 +41,19 @@ class DataWilayahModel extends Model
         return $this->where(['id' => $id])->first();
     }
 
-    public function getJumlahByKabupatenKecamatan($tanggal = null)
+    public function cekDuplikat($tgl, $waktu, $kabKota, $kecamatan)
+    {
+        return $this->where([
+            'tglKejadian'    => $tgl,
+            'waktuKejadian' => $waktu,
+            'kabKota'       => $kabKota,
+            'kecamatan'     => $kecamatan
+        ])
+            ->first();
+    }
+
+
+    public function getJumlahByKabupatenKecamatan1($tanggal = null)
     {
         $builder = $this->select('kabKota, kecamatan, COUNT(*) as jumlah');
 
@@ -73,6 +88,39 @@ class DataWilayahModel extends Model
 
         return $output;
     }
+
+    public function getJumlahByKabupatenKecamatan($startDate = null, $endDate = null)
+    {
+        $builder = $this->select('kabKota, kecamatan, COUNT(*) as jumlah');
+
+        // FILTER RANGE TANGGAL
+        if ($startDate && $endDate) {
+            $builder->where('tglKejadian >=', $startDate)
+                ->where('tglKejadian <=', $endDate);
+        }
+
+        $builder->groupBy(['kabKota', 'kecamatan']);
+        $results = $builder->findAll();
+
+        if (empty($results)) {
+            return ['status' => 'kosong', 'message' => 'Data kosong'];
+        }
+
+        $output = [];
+        foreach ($results as $row) {
+            $kabKota = $row['kabKota'];
+            $kecamatan = $row['kecamatan'];
+            $jumlah = (int) $row['jumlah'];
+
+            $output[$kabKota][$kecamatan] = $jumlah;
+        }
+
+        return $output;
+    }
+
+
+
+
 
     public function getFilteredData($kabKota = null, $startDate = null, $endDate = null, $isAdmin = false, $wilayahUser = null)
     {

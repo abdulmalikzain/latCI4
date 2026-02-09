@@ -6,7 +6,7 @@
       "properties": {
         "kd_propinsi": "33",
         "kd_dati2": "75",
-        "nm_dati2": "Kota Pekalongan"
+        "nm_dati2": "KotaPekalongan"
       },
       "geometry": {
         "type": "MultiPolygon",

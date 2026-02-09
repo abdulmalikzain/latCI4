@@ -21,19 +21,28 @@ class User extends BaseController
     public function index()
     {
 
-        $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
+        $startDate = $this->request->getGet('startDate');
+        $endDate   = $this->request->getGet('endDate');
 
-        $data['jumlahKotaKecamatan'] = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
-        $data['tanggal'] = $tanggal; // ← kirim ke view
+        if (!$startDate || !$endDate) {
+            $endDate = date('Y-m-d'); // Hari ini
+            $startDate = date('Y') . '-01-01'; // 1 Januari tahun ini
+        }
+
+        $data['jumlahKotaKecamatan'] = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($startDate, $endDate);
+        $data['startDate'] = $startDate;
+        $data['endDate']   = $endDate;
 
         return view('user/index', $data);
     }
 
     public function getData()
     {
-        $tanggal = $this->request->getGet('tanggal');
+        $startDate = $this->request->getGet('startDate');
+        $endDate   = $this->request->getGet('endDate');
 
-        $data1 = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
+        $data1 = $this->dataWilayahModel
+            ->getJumlahByKabupatenKecamatan($startDate, $endDate);
 
         // return JSON (jangan view)
         return $this->response->setJSON($data1);

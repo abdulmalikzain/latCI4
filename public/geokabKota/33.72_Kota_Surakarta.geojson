@@ -6,7 +6,7 @@
       "properties": {
         "kd_propinsi": "33",
         "kd_dati2": "72",
-        "nm_dati2": "Kota Surakarta"
+        "nm_dati2": "KotaSurakarta"
       },
       "geometry": {
         "type": "MultiPolygon",

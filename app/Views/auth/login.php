@@ -82,7 +82,7 @@
                     <div class="row">
 
                         <div class="col-lg-6">
-                            <a href="<?= base_url('map') ?>" class="card1-link" target="_blank">
+                            <a href="<?= base_url('map') ?>" class="card1-link">
                                 <div class="card1" href="#">
                                     <img src="img/Asset_map.svg">
                                     <div class="overlay"></div>

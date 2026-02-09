@@ -39,20 +39,31 @@ class Home extends BaseController
 
     public function map()
     {
-        $tanggal = $this->request->getGet('tanggal') ?? date('Y-m-d');
 
-        $data['jumlahKotaKecamatan'] = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
-        $data['tanggal'] = $tanggal; // ← kirim ke view
+        // Ambil request GET jika ada
+        $startDate = $this->request->getGet('startDate');
+        $endDate   = $this->request->getGet('endDate');
+
+        if (!$startDate || !$endDate) {
+            $endDate = date('Y-m-d'); // Hari ini
+            $startDate = date('Y') . '-01-01'; // 1 Januari tahun ini
+        }
+
+        $data['jumlahKotaKecamatan'] = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($startDate, $endDate);
+        $data['startDate'] = $startDate;
+        $data['endDate']   = $endDate;
+
         return view('v_homeMap', $data);
     }
 
     public function getData()
     {
-        $tanggal = $this->request->getGet('tanggal');
+        $startDate = $this->request->getGet('startDate');
+        $endDate   = $this->request->getGet('endDate');
 
-        $data1 = $this->dataWilayahModel->getJumlahByKabupatenKecamatan($tanggal);
+        $data1 = $this->dataWilayahModel
+            ->getJumlahByKabupatenKecamatan($startDate, $endDate);
 
-        // return JSON (jangan view)
         return $this->response->setJSON($data1);
     }
 

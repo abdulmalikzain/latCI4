@@ -10900,6 +10900,11 @@ section {
   color: #E31A1C;
 }
 
+.leaflet-interactive {
+    transition: fill 0.5s ease-in-out, stroke 0.3s;
+}
+
+
 .date-filter-card {
   position: absolute;
   z-index: 9999;
@@ -11039,4 +11044,92 @@ section {
             margin-right: 10px;
             opacity: 0.7;
         }
+
+
+        /* ///////////// Custom Legend Styles ///////////// */
+.custom-legend {
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    line-height: 18px;
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    width: 150px;
+}
+
+.custom-legend h4 {
+    margin: 0 0 5px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+}
+
+.legend-color {
+    width: 20px;
+    height: 14px;
+    border-radius: 4px;
+    margin-right: 10px;
+    border: 1px solid rgba(0,0,0,0.2);
+}
+
+.legend-label {
+    font-size: 12px;
+}
+.legend-row:hover {
+    background: #eccccf;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Button */
+.toggle-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+
+.toggle-btn:hover {
+    background: #555;
+}
+
+/* ---- DARK MODE ---- */
+.dark-mode .custom-legend {
+    background: rgba(24, 24, 24, 0.9);
+    color: #eee;
+    border: 1px solid #555;
+}
+
+.dark-mode .toggle-btn {
+    background: #f8f8f8;
+    color: black;
+}
+
+.editPhotoBtn {
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+
+.editPhotoBtn:hover {
+    transform: scale(1.05);
+}
+
+.user-avatar {
+    transition: .3s ease;
+}
+
+
+
 
